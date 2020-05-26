@@ -1,0 +1,22 @@
+# PacmanAI UADE
+Implementación original de Berkeley del clasico juego del Pacman. Adapted por Nelson Ponzoni solo con fines académicos.
+
+**Archivos que deben editar**
+search.py: Donde reside la implementacion de los algoritmos de busqueda.
+searchAgents.py: Donde reside el agente basado en busqueda.
+
+**Archivos que puede ser interesante ver**
+commands.txt: Comandos a ejecutar en una consola CMD o BASH
+pacman.py: El archivo principal que ejecuta el juego Pacman. En este archivo se describe el estado del juego (Pacman GameState) el cual sera usado en el proyecto.
+game.py: Maquinaria detras de escena que describe como el mundo del pacman funciona. AgentState, Agent, Direction, y Grid.
+util.py: Estructura soporte que será usada en los algoritmos.
+
+
+* P1 - [Search]: implementar los algoritmos de busqueda para 
+	* depth-first
+	* breadth-first
+	* uniform cost y,
+	* A*. 
+Estos algoritmos resuelven como el pacman debe desplazarse dentro de los laberintos
+
+**NOTA**: las secciones de codigo a completar, estan marcadas como '"*** YOUR CODE HERE ***"'
