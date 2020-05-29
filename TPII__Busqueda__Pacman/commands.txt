@@ -20,3 +20,17 @@ py pacman.py -l mediumCorners -p AStarCornersAgent -z 0.5
 py pacman.py -l testSearch -p AStarFoodSearchAgent
 py pacman.py -l trickySearch -p AStarFoodSearchAgent
 py pacman.py -l bigSearch -p ClosestDotSearchAgent -z .5 
+
+
+-- Franco agrega notas...
+py pacman.py -h
+
+py pacman.py
+	--layout ${LAYOUT}
+		archivo .lay de la carpeta layouts
+	--pacman ${AGENTE}
+		Agente del archivo searchAgents.py
+		De Fabrica
+			GoWestAgent; ; StayEastSearchAgent; StayWestSearchAgent
+		Hay que codear search.py y searchAgents.py
+			SearchAgent; AStarCornersAgent; AStarFoodSearchAgent; ClosestDotSearchAgent

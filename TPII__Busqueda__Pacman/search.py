@@ -86,34 +86,36 @@ def depthFirstSearch(problem):
     print("Start:", problem.getStartState())
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     """
+    "*** YOUR CODE HERE DONE ***"
     #Pareciera que estos metodos tienen que devolver un array de game.Directions con el camino resultado
-    theWae=depthFirstSearchRecursor(problem,problem.getStartState(),[])
+    #theWae=depthFirstSearchWRecursion(problem,problem.getStartState(),[])
+    theWae=depthFirstSearchWStack(problem)
     if theWae:
         print("Goal state was found with this directions: ",theWae)
     if not theWae:
         print("No goal state could be found.")
-    
+    #util.raiseNotDefined()
     return theWae
 
 #Metodo recursivo de profundidad primero para encontrar la meta
 #Si encuentra la meta retorna un array de game.Directions indicando el camino desde positionXY hasta la meta del problem
 #Si no encuentra la meta retorna NoneType
-#positionsClearedXY ayuda a no girar en circulos, o volver para atras.
-def depthFirstSearchRecursor(problem, positionXY, positionsClearedXY):
+#nodesCleared ayuda a no girar en circulos, o volver para atras.
+def depthFirstSearchWRecursion(problem, node, nodesCleared):
+    from game import Directions
     #Si estoy parado en la solucion retorno un array con alto
-    if problem.isGoalState(positionXY):
-        print("Found goal state! ", positionXY)
-        from game import Directions
+    if problem.isGoalState(node):
+        print("Found goal state! ", node)
         return [Directions.STOP]
     #agrego la celda ya visitada a mi memoria
-    positionsClearedXY.append(positionXY)
-    for succesor in problem.getSuccessors(positionXY):
+    nodesCleared.append(node)
+    for succesor in problem.getSuccessors(node):
         succesor_position  = succesor [0]
         succesor_direction = succesor [1]
         succesor_cost      = succesor [2]
         #ya pase por esa celda?
-        if not arrayXYcontainsPosXY(positionsClearedXY,succesor_position):
-            nextSteps = depthFirstSearchRecursor(problem,succesor_position,positionsClearedXY)
+        if not arrayXYcontainsPosXY(nodesCleared,succesor_position):
+            nextSteps = depthFirstSearchWRecursion(problem,succesor_position,nodesCleared)
             if not nextSteps is None:
                 return [succesor_direction] + nextSteps
 
@@ -124,15 +126,81 @@ def arrayXYcontainsPosXY(positionsXY, positionXY):
             return True
     return False
 
+#FDT: no me sale, no me voy a calentar...
+def depthFirstSearchWStack(problem):
+    from game import Directions
+    nodeStack = [ [ [], problem.getStartState() ] ]
+    nodesCleared = [] #celdas en las que ya estuve
+    #mientras no este vacio el nodeStack
+    while nodeStack != []:
+        pathToNode, node=nodeStack.pop() #saco el tope del nodeStack
+        nodesCleared.append(node)
+        if problem.isGoalState(node):
+            return pathToNode + [Directions.STOP]
+        else:
+            for succesor in problem.getSuccessors(node):
+                succesor_position  = succesor [0]
+                succesor_direction = succesor [1]
+                succesor_cost      = succesor [2]
+                #ya pase por esa celda?
+                if not arrayXYcontainsPosXY(nodesCleared,succesor_position):
+                    nodeStack.append([pathToNode+[succesor_direction],succesor_position])
+
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    "*** YOUR CODE HERE DONE ***"
+    from game import Directions
+    nodeQueue = [ [ [], problem.getStartState() ] ]
+    nodesCleared = [] #celdas en las que ya estuve
+    
+    while nodeQueue != []:
+        pathToNode, node = nodeQueue.pop(0) #saco el primero de la cola
+        if problem.isGoalState(node):
+            return pathToNode + [Directions.STOP]
+        for succesor in problem.getSuccessors(node):
+            succesor_position  = succesor [0]
+            succesor_direction = succesor [1]
+            succesor_cost      = succesor [2]
+            #ya pase por esa celda?
+            if not arrayXYcontainsPosXY(nodesCleared,succesor_position):
+                nodesCleared.append(node)
+                nodeQueue.append([pathToNode+[succesor_direction],succesor_position])
+
+    #util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    "*** YOUR CODE HERE DONE ***"
+    from game import Directions
+    scannedNodes = [ [ [], problem.getStartState(), 0 ] ]
+    nodesCleared = [] #celdas en las que ya estuve
+    
+    while scannedNodes != []:
+        #recupero el nodo con menor costo de los escaneados
+        pathToNode, node, costToNode = getAndRemoveNodeWithLessCost(scannedNodes)
+        if problem.isGoalState(node):
+            return pathToNode + [Directions.STOP]
+        for succesor in problem.getSuccessors(node):
+            succesor_position  = succesor [0]
+            succesor_direction = succesor [1]
+            succesor_cost      = succesor [2] + costToNode
+            #ya pase por esa celda?
+            if not arrayXYcontainsPosXY(nodesCleared,succesor_position):
+                nodesCleared.append(node)
+                scannedNodes.append([pathToNode+[succesor_direction], succesor_position, succesor_cost])
+    #util.raiseNotDefined()
+
+def getAndRemoveNodeWithLessCost(nodeCollection):
+    index=0
+    bestCost = (nodeCollection[0])[2] #el primer costo
+    bestIndex = 0 #el primer elemento
+    for node in nodeCollection:
+        if bestCost>node[2]:
+            bestCost=node[2]
+            bestIndex=index
+        index+=1
+    if bestIndex != -1:
+        return nodeCollection.pop(bestIndex)
 
 def nullHeuristic(state, problem=None):
     """
@@ -143,8 +211,25 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    "*** YOUR CODE HERE DONE ***"
+    from game import Directions
+    scannedNodes = [ [ [], problem.getStartState(), 0 ] ]
+    nodesCleared = [] #celdas en las que ya estuve
+    
+    while scannedNodes != []:
+        #recupero el nodo con menor costo de los escaneados
+        pathToNode, node, costToNode = getAndRemoveNodeWithLessCost(scannedNodes)
+        if problem.isGoalState(node):
+            return pathToNode + [Directions.STOP]
+        for succesor in problem.getSuccessors(node):
+            succesor_position  = succesor [0]
+            succesor_direction = succesor [1]
+            succesor_cost      = succesor [2] + costToNode + heuristic(succesor_position, problem)
+            #ya pase por esa celda?
+            if not arrayXYcontainsPosXY(nodesCleared,succesor_position):
+                nodesCleared.append(node)
+                scannedNodes.append([pathToNode+[succesor_direction], succesor_position, succesor_cost])
+    #util.raiseNotDefined()
 
 
 # Abbreviations
