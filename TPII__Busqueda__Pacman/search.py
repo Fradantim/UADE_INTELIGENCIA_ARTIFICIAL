@@ -299,7 +299,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 expandedNodes.append([posPathToNode+[succesor_position], dirPathToNode+[succesor_direction], succesor_cost])
     #util.raiseNotDefined()
 
-debug=True
+debug=False
 def debugStatus(problem, nodes, node, map=None):
     if debug:
         from time import sleep
