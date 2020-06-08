@@ -121,12 +121,14 @@ def depthFirstSearchWRecursion(problem, node, nodesCleared):
 
 #Retorna true si el array de arrays 'positionsXY' contiene el array 'positionXY'
 def arrayXYcontainsPosXY(positionsXY, positionXY):
+    return positionXY in positionsXY
+"""
     for innerPositionXY in positionsXY:
         if positionXY[0]==innerPositionXY[0] and positionXY[1]==innerPositionXY[1]:
             return True
     return False
+"""
 
-#FDT: no me sale, no me voy a calentar...
 def depthFirstSearchWStack(problem):
     from game import Directions
     nodeStack = [ [ [], problem.getStartState() ] ]
@@ -172,35 +174,96 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE DONE ***"
     from game import Directions
-    scannedNodes = [ [ [], problem.getStartState(), 0 ] ]
-    nodesCleared = [] #celdas en las que ya estuve
-    
+    from time import sleep
+    posPathToNode = [problem.getStartState()]
+    dirPathToNode = []
+    costToNode = 0
+    scannedNodes = [ [ posPathToNode, dirPathToNode, costToNode] ]
+
+    map = debugStatus(problem, scannedNodes, problem.getStartState())
+    #printMap(map)
     while scannedNodes != []:
         #recupero el nodo con menor costo de los escaneados
-        pathToNode, node, costToNode = getAndRemoveNodeWithLessCost(scannedNodes)
+        posPathToNode, dirPathToNode, costToNode = getAndRemoveNodeWithLessCost(scannedNodes)
+        node = posPathToNode[-1]
+        map = debugStatus(problem, scannedNodes, node, map)
+        #print(posPathToNode)
         if problem.isGoalState(node):
-            return pathToNode + [Directions.STOP]
+            return dirPathToNode + [Directions.STOP]
         for succesor in problem.getSuccessors(node):
             succesor_position  = succesor [0]
             succesor_direction = succesor [1]
             succesor_cost      = succesor [2] + costToNode
-            #ya pase por esa celda?
-            if not arrayXYcontainsPosXY(nodesCleared,succesor_position):
-                nodesCleared.append(node)
-                scannedNodes.append([pathToNode+[succesor_direction], succesor_position, succesor_cost])
+            #estoy recursando camino?
+            if not succesor_position in posPathToNode:
+                #nodesCleared.append(node)
+                scannedNodes.append([posPathToNode+[succesor_position], dirPathToNode+[succesor_direction], succesor_cost])
     #util.raiseNotDefined()
+
+def printMap(map):
+    for y in range(len(map)):
+        for x in range(len(map[len(map)-y-1])):
+            print(map[len(map)-y-1][x],end=' ')
+            #print(str(x)+','+str(y),end='\t')
+        print('\n')
+    print("- - - - - - \n")
+
+def getMapWCost(problem, node):
+    scannedNodes = []
+    scannedNodesWCost = []
+    nodesToScan = [node]
+    initialNode= node
+    finishNode= [0,0]
+    while nodesToScan != []:
+        node = nodesToScan.pop();
+        scannedNodes.append(node)
+        if problem.isGoalState(node):
+            finishNode=node
+        for succesor in problem.getSuccessors(node):
+            succesor_position  = succesor [0]
+            succesor_direction = succesor [1]
+            succesor_cost      = succesor [2]
+            #estoy recursando camino?
+            if not succesor_position in scannedNodes:
+                #nodesCleared.append(node)
+                nodesToScan.append(succesor_position)
+                scannedNodesWCost.append([succesor_position,succesor_cost])
+    #print(scannedNodesWCost)
+    maxX=0
+    maxY=0
+    for node in scannedNodes:
+        if node[0]>maxX:
+            maxX=node[0]
+        if node[1]>maxY:
+            maxY=node[1]
+    #print ("Max X,Y = ",maxX,' ',maxY)
+    map = None
+    for y in range(maxY+1):
+        if map is None:
+            map=[]
+        for x in range(maxX+1):
+            if len(map)<(y+1):
+                map.append([])
+            map[y].append('X')
+            #print (x," ",y," - ",maxX,' ',maxY,' ',len(map), len(map[y]))
+    #map.pop(0)
+    for node, cost in scannedNodesWCost:
+        map[node[1]][node[0]]=cost
+    #print(map)
+    map[initialNode[1]][initialNode[0]]='I'
+    map[ finishNode[1]][ finishNode[0]]='F'
+    return map
 
 def getAndRemoveNodeWithLessCost(nodeCollection):
     index=0
-    bestCost = (nodeCollection[0])[2] #el primer costo
+    bestCost = nodeCollection[0][2] #el primer costo
     bestIndex = 0 #el primer elemento
     for node in nodeCollection:
         if bestCost>node[2]:
             bestCost=node[2]
             bestIndex=index
         index+=1
-    if bestIndex != -1:
-        return nodeCollection.pop(bestIndex)
+    return nodeCollection.pop(bestIndex)
 
 def nullHeuristic(state, problem=None):
     """
@@ -213,24 +276,42 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE DONE ***"
     from game import Directions
-    scannedNodes = [ [ [], problem.getStartState(), 0 ] ]
-    nodesCleared = [] #celdas en las que ya estuve
+    posPathToNode = [problem.getStartState()]
+    dirPathToNode = []
+    costToNode = 0+heuristic(problem.getStartState(),problem)
+    expandedNodes = [ [ posPathToNode, dirPathToNode, costToNode] ] #celdas en las que ya estuve
     
-    while scannedNodes != []:
+    map = debugStatus(problem, expandedNodes, problem.getStartState())
+    while expandedNodes != []:
         #recupero el nodo con menor costo de los escaneados
-        pathToNode, node, costToNode = getAndRemoveNodeWithLessCost(scannedNodes)
+        posPathToNode, dirPathToNode, costToNode = getAndRemoveNodeWithLessCost(expandedNodes)
+        node=posPathToNode[-1]
+        map = debugStatus(problem, expandedNodes, node, map)
+        #print(posPathToNode)
         if problem.isGoalState(node):
-            return pathToNode + [Directions.STOP]
+            return dirPathToNode + [Directions.STOP]
         for succesor in problem.getSuccessors(node):
             succesor_position  = succesor [0]
             succesor_direction = succesor [1]
-            succesor_cost      = succesor [2] + costToNode + heuristic(succesor_position, problem)
+            succesor_cost      = succesor [2] + heuristic(succesor_position, problem)
             #ya pase por esa celda?
-            if not arrayXYcontainsPosXY(nodesCleared,succesor_position):
-                nodesCleared.append(node)
-                scannedNodes.append([pathToNode+[succesor_direction], succesor_position, succesor_cost])
+            if not succesor_position in posPathToNode:
+                expandedNodes.append([posPathToNode+[succesor_position], dirPathToNode+[succesor_direction], succesor_cost])
     #util.raiseNotDefined()
 
+debug=True
+def debugStatus(problem, nodes, node, map=None):
+    if debug:
+        from time import sleep
+        if map is None:
+            map=getMapWCost(problem, problem.getStartState())
+        #PARA DEBUG:
+        print(len(nodes))
+        map[node[1]][node[0]]='P'
+        printMap(map)
+        sleep(0.05)
+        map[node[1]][node[0]]='-'
+    return map
 
 # Abbreviations
 bfs = breadthFirstSearch

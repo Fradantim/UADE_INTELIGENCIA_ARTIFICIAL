@@ -34,3 +34,7 @@ py pacman.py
 			GoWestAgent; ; StayEastSearchAgent; StayWestSearchAgent
 		Hay que codear search.py y searchAgents.py
 			SearchAgent; AStarCornersAgent; AStarFoodSearchAgent; ClosestDotSearchAgent
+
+
+py pacman.py -l contoursMaze -p SearchAgent -a fn=astar,heuristic=manhattanHeuristic 
+
